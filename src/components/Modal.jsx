@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Table from "./Table";
 
@@ -6,6 +6,9 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchString, setSearchString] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef(null);
   const handleSearch = (searchString) => {
     setSearchString(searchString);
   };
@@ -15,15 +18,17 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
         const response = await axios.get(apiCall, {
           params: {
             search: searchString,
-            page: 1,
-            page_index: 10,
+            page: page,
+            page_index: page,
           },
         });
-        setData(response.data);
+        setData((prevData) => [...prevData, ...response.data.results]);
         setIsLoading(false);
+        setHasMore(response.data.results > 0);
       } catch (error) {
         console.error("Error fetching data:", error);
         setIsLoading(false);
+        setHasMore(false);
       }
     };
 
@@ -31,7 +36,7 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
       fetchData();
       window.history.pushState(null, "", `/modal/${path}`);
     }
-  }, [isOpen, apiCall, searchString]);
+  }, [isOpen, apiCall, searchString, page]);
 
   const closeModal = () => {
     if (onClose) {
@@ -39,6 +44,29 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
       window.history.pushState(null, "", "/problem-2");
     }
   };
+
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (
+      container &&
+      container.scrollTop + container.clientHeight >= container.scrollHeight
+    ) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
 
   return (
     <div>
@@ -52,19 +80,27 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">{title}</h5>
+                <h5 className="modal-title">Modal Title</h5>
                 <button type="button" className="close" onClick={closeModal}>
                   <span>&times;</span>
                 </button>
               </div>
-              <div className="modal-body">
+              <div
+                className="modal-body"
+                onScroll={handleScroll}
+                ref={containerRef}
+                style={{ maxHeight: "400px", overflowY: "auto" }}
+              >
                 {isLoading ? (
                   <p>Loading...</p>
                 ) : (
-                  <div>
-                    <Table data={data} handleSearch={handleSearch} />
-                  </div>
+                  <Table
+                    data={data}
+                    handleSearch={handleSearch}
+                    loadMoreData={handleScroll}
+                  />
                 )}
+                {!isLoading && !hasMore && <p>No more data to load.</p>}
               </div>
               <div className="modal-footer">
                 <button

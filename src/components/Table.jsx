@@ -20,10 +20,10 @@ export default function Table({ data, handleSearch }) {
           </tr>
         </thead>
         <tbody>
-          {data?.results?.map((result, index) => (
+          {data?.map((data, index) => (
             <tr key={index}>
-              <td>{result.country.name}</td>
-              <td>{result.phone}</td>
+              <td>{data.country.name}</td>
+              <td>{data.phone}</td>
             </tr>
           ))}
         </tbody>
