@@ -3,7 +3,7 @@ import axios from "axios";
 import Table from "./Table";
 
 const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchString, setSearchString] = useState("");
   const [page, setPage] = useState(1);
@@ -22,6 +22,7 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
             page_index: page,
           },
         });
+
         setData((prevData) => [...prevData, ...response.data.results]);
         setIsLoading(false);
         setHasMore(response.data.results > 0);
