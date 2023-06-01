@@ -47,6 +47,7 @@ const Problem2 = () => {
         onClose={handleCloseModal1}
         apiCall="https://contact.mediusware.com/api/contacts/"
         title="All Contacts"
+        path={"all-contacts"}
       />
 
       <Modal
@@ -54,6 +55,7 @@ const Problem2 = () => {
         onClose={handleCloseModal2}
         apiCall="https://contact.mediusware.com/api/country-contacts/United%20States/"
         title="US Contacts"
+        path={"us-contacts"}
       />
     </div>
   );

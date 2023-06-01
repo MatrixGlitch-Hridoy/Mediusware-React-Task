@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Table({ data }) {
+export default function Table({ data, handleSearch }) {
   return (
     <div>
       <div className="form-group">
@@ -9,7 +9,7 @@ export default function Table({ data }) {
           className="form-control"
           placeholder="Search by country name"
           //   value={searchTerm}
-          //   onChange={handleSearch}
+          onChange={(e) => handleSearch(e.target.value)}
         />
       </div>
       <table className="table">
