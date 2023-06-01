@@ -8,6 +8,7 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
   const [searchString, setSearchString] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [showEvenNumbers, setShowEvenNumbers] = useState(false);
   const containerRef = useRef(null);
   const handleSearch = (searchString) => {
     setSearchString(searchString);
@@ -23,9 +24,23 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
           },
         });
 
-        setData((prevData) => [...prevData, ...response.data.results]);
+        const newData = response.data.results;
+        let filteredData = newData;
+        if (showEvenNumbers) {
+          filteredData = newData.filter((item) => {
+            const numberOnly = item.phone.replace(/\D/g, "");
+            const parsedNumber = parseInt(numberOnly, 12);
+            return parsedNumber % 2 === 0;
+          });
+        }
+
+        setData((prevData) => [...prevData, ...filteredData]);
         setIsLoading(false);
-        setHasMore(response.data.results > 0);
+        setHasMore(filteredData.length > 0);
+
+        // setData((prevData) => [...prevData, ...response.data.results]);
+        // setIsLoading(false);
+        // setHasMore(response.data.results > 0);
       } catch (error) {
         console.error("Error fetching data:", error);
         setIsLoading(false);
@@ -37,7 +52,7 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
       fetchData();
       window.history.pushState(null, "", `/modal/${path}`);
     }
-  }, [isOpen, apiCall, searchString, page]);
+  }, [isOpen, apiCall, searchString, page, showEvenNumbers]);
 
   const closeModal = () => {
     if (onClose) {
@@ -69,23 +84,23 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
     };
   }, []);
 
+  const handleCheckboxChange = (event) => {
+    setShowEvenNumbers(event.target.checked);
+  };
+
   return (
     <div>
       {isOpen && (
-        <div
-          className="modal"
-          tabIndex="-1"
-          role="dialog"
-          style={{ display: "block" }}
-        >
-          <div className="modal-dialog" role="document">
+        <div className="modal" style={{ display: "block" }}>
+          <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Modal Title</h5>
-                <button type="button" className="close" onClick={closeModal}>
+                <h5 className="modal-title">{title}</h5>
+                <button type="button" className="close " onClick={closeModal}>
                   <span>&times;</span>
                 </button>
               </div>
+
               <div
                 className="modal-body"
                 onScroll={handleScroll}
@@ -104,13 +119,37 @@ const Modal = ({ title, isOpen, onClose, apiCall, path }) => {
                 {!isLoading && !hasMore && <p>No more data to load.</p>}
               </div>
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={closeModal}
-                >
-                  Close
-                </button>
+                <div className="">
+                  <button
+                    className="btn"
+                    style={{ backgroundColor: "#46139f", color: "white" }}
+                  >
+                    ALL Contacts
+                  </button>
+                  <button
+                    className="btn"
+                    style={{ backgroundColor: "#ff7f50", color: "white" }}
+                  >
+                    US Contacts
+                  </button>
+                  <button
+                    className="btn"
+                    style={{ backgroundColor: "#ffffff", border: "46139f" }}
+                    onClick={closeModal}
+                  >
+                    Close
+                  </button>
+                  <div>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={showEvenNumbers}
+                        onChange={handleCheckboxChange}
+                      />
+                      Only Even
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
